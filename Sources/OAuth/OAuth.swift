@@ -22,7 +22,7 @@ open class OAuth {
     ///User identifier
     public private(set) var userIdentifier: String?
     ///Oauth verifier
-    private var verifier: String?
+    public private(set) var verifier: String?
     
     private var signingKey: String {
         let consumer = OAuth.consumerSecret
