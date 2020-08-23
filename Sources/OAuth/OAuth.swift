@@ -52,6 +52,10 @@ open class OAuth {
         return dict
     }
     
+    public init() {
+        
+    }
+    
     public static func setConsumer(consumerKey: String, consumerSecret: String) {
         OAuth.consumerKey = consumerKey
         OAuth.consumerSecret = consumerSecret
