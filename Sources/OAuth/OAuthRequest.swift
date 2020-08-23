@@ -14,11 +14,11 @@ public struct OAuthRequest {
         case post = "POST"
     }
     
-    var url: URL
-    var header: Header
-    var httpMethod: HTTPMethod
+    public var url: URL
+    public var header: Header
+    public var httpMethod: HTTPMethod
     
-    init(method: HTTPMethod, url: URL, header: Header) {
+    public init(method: HTTPMethod, url: URL, header: Header) {
         self.url = url
         self.header = header
         self.httpMethod = method

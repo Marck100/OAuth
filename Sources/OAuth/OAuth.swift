@@ -17,10 +17,18 @@ public final class OAuth {
     static private var consumerSecret: String = "xxx"
     
     ///Oauth token
-    private var token: String?
-    private var tokenSecret: String?
+    public private(set) var token: String?
+    public private(set) var tokenSecret: String?
+    ///User identifier
+    public private(set) var userIdentifier: String?
     ///Oauth verifier
     private var verifier: String?
+    
+    private var signingKey: String {
+        let consumer = OAuth.consumerSecret
+        let token = tokenSecret ?? ""
+        return "\(consumer)&\(token)"
+    }
     
     public var defaultParameters: Parameters {
         var dict = [
@@ -58,6 +66,10 @@ public final class OAuth {
         self.verifier = verifier
     }
     
+    public func setUserIdentifier(identifier: String) {
+        self.userIdentifier = identifier
+    }
+    
     public func request(url: URL, method: OAuthRequest.HTTPMethod, oauthParameters: Parameters?, parameters: Parameters?) -> OAuthRequest {
         let authorizationHeader = self.authorizationHeader(urlPath: url.absoluteString, requestMethod: method, oauthParameters: oauthParameters)
         var header: [String: String] = [authorizationHeader.key: authorizationHeader.value]
@@ -69,13 +81,13 @@ public final class OAuth {
     
     private func authorizationHeader(urlPath: String, requestMethod: OAuthRequest.HTTPMethod, generateDefaultParameters: Bool = true, oauthParameters: Parameters?) -> AuthorizationHeader {
         //Generate parameters
-        let parameters: [String: String] = {
+        var parameters: [String: String] = {
             var parameters = generateDefaultParameters ? defaultParameters : [:]
             oauthParameters?.keys.forEach { parameters[$0] = oauthParameters?[$0] }
             return parameters
         }()
         //Generate signature
-        let signature = generateSignature(urlPath: urlPath, oauthParameters: parameters, requestMethod: requestMethod)
+        let signature = generateSignature(urlPath: urlPath, oauthParameters: &parameters, requestMethod: requestMethod)
         let authParameters = parameters
         //Create header
         let map = authParameters.map { $0.key + "=\"" + $0.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "\"" }
@@ -83,18 +95,27 @@ public final class OAuth {
         return ("Authorization", authValue)
     }
     
-    private func generateSignature(urlPath: String, oauthParameters: Parameters, requestMethod: OAuthRequest.HTTPMethod) -> String {
-        //Sort parameters by key
-        //Endode keys and values
-        let literal = oauthParameters.sorted(by: { $0.key < $1.key }).map { $0.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "=" + $0.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! }
-            .joined(separator: "&").replacingOccurrences(of: "%", with: "%25").replacingOccurrences(of: "&", with: "%26").replacingOccurrences(of: "=", with: "%3D")
-        //Base string
-        let baseString = requestMethod.rawValue + "&" + urlPath.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "&" + literal
-        //Signing key
-        let signingKey = OAuth.consumerSecret.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        //Signature
+    private func generateSignature(urlPath: String, oauthParameters: inout Parameters, requestMethod: OAuthRequest.HTTPMethod) -> String {
+        var components = URLComponents(string: urlPath)!
+        components.queryItems?.forEach { oauthParameters[$0.name] = $0.value }
+        components.query = nil
+        let path = components.url!.absoluteString
+        
+        let literal = oauthParameters.sorted(by: { $0.key < $1.key }).map { $0.key.urlEncoded() + "=" + $0.value.urlEncoded() }
+            .joined(separator: "&").urlEncoded()
+        let baseString = requestMethod.rawValue + "&" + path.urlEncoded() + "&" + literal
+        //let signingKey = self.signingKey.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let signature = baseString.hmac(key: signingKey)
         return signature
     }
     
+}
+
+extension String {
+    func urlEncoded() -> String {
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        let encoded = self.addingPercentEncoding(withAllowedCharacters: allowed)!
+        return encoded
+    }
 }
