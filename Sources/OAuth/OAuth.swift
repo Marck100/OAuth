@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class OAuth {
+open class OAuth {
     public typealias AuthorizationHeader = (key: String, value: String)
     public typealias Parameters = [String: String]
     
