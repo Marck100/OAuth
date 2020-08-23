@@ -26,10 +26,9 @@ OAuth.setConsumer(consumerKey: "xxx", consumerSecret: "xxx")
 But you can add extra parameters to the authorization header
 
 ```swift
-let oauthParameters = [OAuthParameter.callback.rawValue: "xxx"]
 let url = URL(string: "xxx")
 
-let request = OAuth.shared.request(url, method: .post, oauthParameters: oauthParameters, parameters: nil)
+let request = OAuth.shared.request(url, method: .post, oauthParameters: nil, parameters: nil)
 ```
 
 3)  Post your request

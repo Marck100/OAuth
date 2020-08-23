@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class OAuth {
+public class OAuth {
     public typealias AuthorizationHeader = (key: String, value: String)
     public typealias Parameters = [String: String]
     
@@ -104,7 +104,7 @@ public final class OAuth {
         let literal = oauthParameters.sorted(by: { $0.key < $1.key }).map { $0.key.urlEncoded() + "=" + $0.value.urlEncoded() }
             .joined(separator: "&").urlEncoded()
         let baseString = requestMethod.rawValue + "&" + path.urlEncoded() + "&" + literal
-        //let signingKey = self.signingKey.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        
         let signature = baseString.hmac(key: signingKey)
         return signature
     }
