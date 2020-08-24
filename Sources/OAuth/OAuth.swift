@@ -164,6 +164,7 @@ extension OAuth {
         return urlComponents.url
     }
     
+    @discardableResult
     public func observeURL(url: URL) -> Bool {
         guard let verifier = parseVerifier(url: url) else { return false }
         

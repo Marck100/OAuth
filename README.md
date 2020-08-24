@@ -5,7 +5,7 @@ It's very easy to use and needs basic information:
 - consumerKey
 - consumerSecretKey
 ...
-and you can add parameters to the authorization field or others.
+and you can add parameters to the authorization field and more
 
 ## Let's start
 
@@ -15,7 +15,31 @@ and you can add parameters to the authorization field or others.
 OAuth.setConsumer(consumerKey: "xxx", consumerSecret: "xxx")
 ```
 
-2) Generate your request
+2) Provide `openURL`
+```swift
+OAuth.shared.openURL = { url in
+...
+}
+```
+
+3) Add callback support to your app in Targets>Your main app>Info>URL Types
+4) Handle callback in your app
+
+```swift
+func scene(_ scene: UIScene, url: URL) {
+/// This function return true if the passed url is OAuth callback
+OAuth.shared.observeURL(url: url)
+}
+```
+
+5) Login
+```
+OAuth.shared.login { success in
+    ...
+}
+```
+
+6) Generate your request
 > Oauth generates most of the oauth parameters:
 > - `oauth_signature_method`
 > - `oauth_timestamp`
@@ -31,7 +55,7 @@ let url = URL(string: "xxx")
 let request = OAuth.shared.request(url, method: .post, oauthParameters: nil, parameters: nil)
 ```
 
-3)  Post your request
+7)  Post your request
 
 ```swift
 PostCenter.shared.post(request, completionHandler: completionHandler)
