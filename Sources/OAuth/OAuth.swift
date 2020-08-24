@@ -7,11 +7,14 @@
 
 import Foundation
 
-open class OAuth {
+final class OAuth {
+    
     public typealias AuthorizationHeader = (key: String, value: String)
     public typealias Parameters = [String: String]
     
     public static let shared = OAuth()
+    
+    public var openURL: (_ url: URL) -> Void = { _ in }
     
     static private var consumerKey: String = "xxx"
     static private var consumerSecret: String = "xxx"
@@ -115,11 +118,151 @@ open class OAuth {
     
 }
 
-extension String {
-    func urlEncoded() -> String {
-        var allowed = CharacterSet.alphanumerics
-        allowed.insert(charactersIn: "-._~")
-        let encoded = self.addingPercentEncoding(withAllowedCharacters: allowed)!
-        return encoded
+//MARK:- Login Flow
+extension OAuth {
+    
+    public typealias TokensHandler = (_ token: String?, _ tokenSecret: String?) -> Void
+    public func askForTokens(completionHandler: @escaping(TokensHandler)) {
+        
+        let url = URL(string: "https://api.twitter.com/oauth/request_token")!
+        let request = self.request(url: url, method: .get, oauthParameters: nil, parameters: nil)
+        
+        PostCenter.shared.post(request) { (data, response, error) in
+            
+            var token: String?
+            var tokenSecret: String?
+            
+            defer {
+                completionHandler(token, tokenSecret)
+            }
+            
+            guard let data = data, let str = String(data: data, encoding: .utf8) else { return }
+            
+            let parameters = str.components(separatedBy: "&").map { (string) -> (key: String, value: String) in
+                let split = string.split(separator: "=")
+                let key = String(split[0])
+                let value = String(split[1])
+                return (key, value)
+            }
+            
+            token = parameters.first(where: { $0.key == OAuthParameter.token.rawValue })?.value
+            tokenSecret = parameters.first(where: { $0.key == OAuthParameter.tokenSecret.rawValue })?.value
+        }
+        
     }
+    
+    public func authorizeURL() -> URL? {
+        guard let token = self.token else { return nil }
+        
+        let path = "https://api.twitter.com/oauth/authorize"
+        guard var urlComponents = URLComponents(string: path) else { return nil }
+        
+        urlComponents.queryItems = [
+            .init(name: OAuthParameter.token.rawValue, value: token)
+        ]
+        
+        return urlComponents.url
+    }
+    
+    public func observeURL(url: URL) -> Bool {
+        guard let verifier = parseVerifier(url: url) else { return false }
+        
+        NotificationCenter.default.post(name: .init("didReceiveResponse"), object: verifier)
+        return true
+    }
+    
+    public func parseVerifier(url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
+        
+        let verifier = components.queryItems?.first(where: { $0.name == OAuthParameter.verifier.rawValue })?.value
+        
+        return verifier
+    }
+    
+    public func askForAccessToken(completionHandler: @escaping(TokensHandler)) {
+        
+        guard let token = self.token, let verifier = self.verifier else {
+            completionHandler(nil, nil)
+            return
+        }
+        
+        let path = "https://api.twitter.com/oauth/access_token"
+        var urlComponents = URLComponents(string: path)!
+        urlComponents.queryItems = [
+            .init(name: OAuthParameter.token.rawValue, value: token),
+            .init(name: OAuthParameter.verifier.rawValue, value: verifier)
+        ]
+        let url = urlComponents.url!
+        
+        let request = self.request(url: url, method: .post, oauthParameters: nil, parameters: nil)
+        PostCenter.shared.post(request) { (data, response, error) in
+        
+            var token: String?
+            var tokenSecret: String?
+            
+            defer {
+                completionHandler(token, tokenSecret)
+            }
+            
+            guard let data = data, let str = String(data: data, encoding: .utf8) else { return }
+            
+            let parameters = str.components(separatedBy: "&").map { (string) -> (key: String, value: String) in
+                let split = string.split(separator: "=")
+                let key = String(split[0])
+                let value = String(split[1])
+                return (key: key, value: value)
+            }
+            
+            token = parameters.first(where: { $0.key == OAuthParameter.token.rawValue })?.value
+            tokenSecret = parameters.first(where: { $0.key == OAuthParameter.tokenSecret.rawValue })?.value
+        }
+        
+    }
+    
+    // 1) Set consumer
+    // 2) Set openURL
+    // 3) Add observeURL to main application
+    public func login(completionHandler: @escaping(Bool) -> Void) {
+        
+        askForTokens { (token, tokenSecret) in
+            
+            guard let token = token, let tokenSecret = tokenSecret else {
+                completionHandler(false)
+                return
+            }
+            
+            self.setToken(token: token, tokenSecret: tokenSecret)
+            
+            guard let url = self.authorizeURL() else {
+                completionHandler(false)
+                return
+            }
+            self.openURL(url)
+        }
+        
+        NotificationCenter.default.addObserver(forName: .init("didReceiveResponse"), object: nil, queue: nil) { (notification) in
+            NotificationCenter.default.removeObserver(self, name: .init("didReceiveResponse"), object: nil)
+            
+            guard let verifier = notification.object as? String else {
+                completionHandler(false)
+                return
+            }
+            self.setVerifier(verifier: verifier)
+            
+            self.askForAccessToken { (token, tokenSecret) in
+                guard let token = token, let tokenSecret = tokenSecret else {
+                    completionHandler(false)
+                    return
+                }
+                self.setToken(token: token, tokenSecret: tokenSecret)
+                completionHandler(true)
+            }
+        }
+        
+    }
+    
+}
+
+extension String {
+    
 }
