@@ -172,7 +172,7 @@ extension OAuth {
         return true
     }
     
-    public func parseVerifier(url: URL) -> String? {
+    private func parseVerifier(url: URL) -> String? {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
         
         let verifier = components.queryItems?.first(where: { $0.name == OAuthParameter.verifier.rawValue })?.value
@@ -261,9 +261,5 @@ extension OAuth {
         }
         
     }
-    
-}
-
-extension String {
     
 }
