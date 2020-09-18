@@ -22,14 +22,14 @@ public final class PostCenter {
         var request = URLRequest(url: oauthRequest.url)
         request.allHTTPHeaderFields = oauthRequest.header
         request.httpMethod = oauthRequest.httpMethod.rawValue
-      
-        self.semaphore.signal()
+        
+        //self.semaphore.signal()
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             completionHandler(data, response, error)
         }
         
-        self.semaphore.wait()
+        //self.semaphore.wait()
         
         task.resume()
     }
