@@ -28,12 +28,12 @@ public final class PostCenter {
                 print("error:", error)
             }
             
-            self.semaphore.signal()
+            //self.semaphore.signal()
             completionHandler(data, response, error)
         }
         task.resume()
         
-        semaphore.wait()
+        //semaphore.wait()
     }
     
 }
