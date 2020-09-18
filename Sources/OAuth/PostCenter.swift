@@ -13,7 +13,7 @@ public final class PostCenter {
     public typealias RequestHandler = (Data?, URLResponse?, Error?) -> Void
     public func post(_ oauthRequest: OAuthRequest, completionHandler: @escaping(RequestHandler)) {
         
-        var request = URLRequest(url: oauthRequest.url, timeoutInterval: .infinity)
+        var request = URLRequest(url: oauthRequest.url)
         request.allHTTPHeaderFields = oauthRequest.header
         request.httpMethod = oauthRequest.httpMethod.rawValue
       
