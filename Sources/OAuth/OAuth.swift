@@ -136,7 +136,7 @@ extension OAuth {
                 completionHandler(token, tokenSecret)
             }
             
-            guard let data = data, let str = String(data: data, encoding: .utf8) else { return }
+            guard let data = data, let str = String(data: data, encoding: .utf8), str.components(separatedBy: "&").count >= 2 else { return }
             
             let parameters = str.components(separatedBy: "&").map { (string) -> (key: String, value: String) in
                 let split = string.split(separator: "=")

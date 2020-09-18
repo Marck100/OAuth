@@ -25,12 +25,12 @@ public final class PostCenter {
       
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             
-            //self.semaphore.signal()
+            self.semaphore.signal()
             completionHandler(data, response, error)
         }
         task.resume()
         
-        //semaphore.wait()
+        semaphore.wait()
     }
     
 }
