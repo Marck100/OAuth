@@ -10,6 +10,12 @@ import Foundation
 public final class PostCenter {
     public static let shared = PostCenter()
     
+    private let semaphore: DispatchSemaphore
+    
+    init() {
+        semaphore = DispatchSemaphore(value: 0)
+    }
+    
     public typealias RequestHandler = (Data?, URLResponse?, Error?) -> Void
     public func post(_ oauthRequest: OAuthRequest, completionHandler: @escaping(RequestHandler)) {
         
@@ -17,9 +23,14 @@ public final class PostCenter {
         request.allHTTPHeaderFields = oauthRequest.header
         request.httpMethod = oauthRequest.httpMethod.rawValue
       
+        self.semaphore.signal()
+        
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             completionHandler(data, response, error)
         }
+        
+        self.semaphore.wait()
+        
         task.resume()
     }
     
