@@ -18,20 +18,19 @@ public final class PostCenter {
     
     public typealias RequestHandler = (Data?, URLResponse?, Error?) -> Void
     public func post(_ oauthRequest: OAuthRequest, completionHandler: @escaping(RequestHandler)) {
-        print("request:", oauthRequest)
+        
         var request = URLRequest(url: oauthRequest.url, timeoutInterval: .infinity)
         request.allHTTPHeaderFields = oauthRequest.header
         request.httpMethod = oauthRequest.httpMethod.rawValue
       
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            print("inside task")
+            
             self.semaphore.signal()
             completionHandler(data, response, error)
         }
         task.resume()
-        print("before wait")
+        
         semaphore.wait()
-        print("after wait")
     }
     
 }
