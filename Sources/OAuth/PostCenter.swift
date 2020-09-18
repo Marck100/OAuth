@@ -24,6 +24,10 @@ public final class PostCenter {
         request.httpMethod = oauthRequest.httpMethod.rawValue
       
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let data = data {
+                print(String(data: data, encoding: .utf8) ?? "unavailable")
+            }
+            
             if let error = error {
                 print("error:", error)
             }
