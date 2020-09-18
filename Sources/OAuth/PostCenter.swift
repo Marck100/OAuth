@@ -24,7 +24,10 @@ public final class PostCenter {
         request.httpMethod = oauthRequest.httpMethod.rawValue
       
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            print("error:", error)
+            if let error = error {
+                print("error:", error)
+            }
+            
             self.semaphore.signal()
             completionHandler(data, response, error)
         }
