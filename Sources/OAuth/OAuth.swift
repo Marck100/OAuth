@@ -77,11 +77,11 @@ final public class OAuth {
         self.userIdentifier = identifier
     }
     
-    public func request(url: URL, method: OAuthRequest.HTTPMethod, oauthParameters: Parameters?, parameters: Parameters?) -> OAuthRequest {
+    public func request(url: URL, method: OAuthRequest.HTTPMethod, oauthParameters: Parameters?, parameters: Parameters?, body: OAuthRequest.Body?) -> OAuthRequest {
         let authorizationHeader = self.authorizationHeader(urlPath: url.absoluteString, requestMethod: method, oauthParameters: oauthParameters)
         var header: [String: String] = [authorizationHeader.key: authorizationHeader.value]
         parameters?.forEach { header[$0.key] = $0.value }
-        let request = OAuthRequest(method: method, url: url, header: header)
+        let request = OAuthRequest(method: method, url: url, header: header, body: body)
         
         return request
     }
@@ -125,7 +125,7 @@ extension OAuth {
     public func askForTokens(completionHandler: @escaping(TokensHandler)) {
         
         let url = URL(string: "https://api.twitter.com/oauth/request_token")!
-        let request = self.request(url: url, method: .get, oauthParameters: nil, parameters: nil)
+        let request = self.request(url: url, method: .get, oauthParameters: nil, parameters: nil, body: nil)
         
         PostCenter.shared.post(request) { (data, response, error) in
             
@@ -195,7 +195,7 @@ extension OAuth {
         ]
         let url = urlComponents.url!
         
-        let request = self.request(url: url, method: .post, oauthParameters: nil, parameters: nil)
+        let request = self.request(url: url, method: .post, oauthParameters: nil, parameters: nil, body: nil)
         PostCenter.shared.post(request) { (data, response, error) in
         
             var token: String?
