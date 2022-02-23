@@ -23,6 +23,17 @@ public final class PostCenter {
         request.allHTTPHeaderFields = oauthRequest.header
         request.httpMethod = oauthRequest.httpMethod.rawValue
         
+        
+        if let body = oauthRequest.body, let bodyData = try? JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted]) {
+            
+          
+            request.httpBody = bodyData
+            
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+        }
+        
+        
         //self.semaphore.signal()
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
