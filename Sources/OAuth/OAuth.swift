@@ -228,6 +228,7 @@ extension OAuth {
         askForTokens { (token, tokenSecret) in
             
             guard let token = token, let tokenSecret = tokenSecret else {
+                print("No token")
                 completionHandler(false)
                 return
             }
@@ -235,6 +236,7 @@ extension OAuth {
             self.setToken(token: token, tokenSecret: tokenSecret)
             
             guard let url = self.authorizeURL() else {
+                print("no authorize URL")
                 completionHandler(false)
                 return
             }
@@ -245,6 +247,7 @@ extension OAuth {
             NotificationCenter.default.removeObserver(self, name: .init("didReceiveResponse"), object: nil)
             
             guard let verifier = notification.object as? String else {
+                print("No verifier")
                 completionHandler(false)
                 return
             }
