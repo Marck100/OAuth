@@ -250,14 +250,16 @@ extension OAuth {
             }
             self.setVerifier(verifier: verifier)
             
-            self.askForAccessToken { (token, tokenSecret) in
+            /*self.askForAccessToken { (token, tokenSecret) in
                 guard let token = token, let tokenSecret = tokenSecret else {
                     completionHandler(false)
                     return
                 }
                 self.setToken(token: token, tokenSecret: tokenSecret)
                 completionHandler(true)
-            }
+            }*/
+            
+            completionHandler(true)
         }
         
     }
