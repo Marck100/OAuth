@@ -224,11 +224,11 @@ extension OAuth {
     // 2) Set openURL
     // 3) Add observeURL to main application
     public func login(completionHandler: @escaping(Bool) -> Void) {
-        print("LOGIN")
+      
         askForTokens { (token, tokenSecret) in
             
             guard let token = token, let tokenSecret = tokenSecret else {
-                print("No token")
+               
                 completionHandler(false)
                 return
             }
@@ -236,7 +236,7 @@ extension OAuth {
             self.setToken(token: token, tokenSecret: tokenSecret)
             
             guard let url = self.authorizeURL() else {
-                print("no authorize URL")
+               
                 completionHandler(false)
                 return
             }
@@ -245,22 +245,22 @@ extension OAuth {
         
         NotificationCenter.default.addObserver(forName: .init("didReceiveResponse"), object: nil, queue: nil) { (notification) in
             NotificationCenter.default.removeObserver(self, name: .init("didReceiveResponse"), object: nil)
-            
+          
             guard let verifier = notification.object as? String else {
-                print("No verifier")
+               
                 completionHandler(false)
                 return
             }
             self.setVerifier(verifier: verifier)
             
-            /*self.askForAccessToken { (token, tokenSecret) in
+            self.askForAccessToken { (token, tokenSecret) in
                 guard let token = token, let tokenSecret = tokenSecret else {
                     completionHandler(false)
                     return
                 }
                 self.setToken(token: token, tokenSecret: tokenSecret)
                 completionHandler(true)
-            }*/
+            }
             
             completionHandler(true)
         }
