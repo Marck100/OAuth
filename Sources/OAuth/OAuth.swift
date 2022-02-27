@@ -224,7 +224,7 @@ extension OAuth {
     // 2) Set openURL
     // 3) Add observeURL to main application
     public func login(completionHandler: @escaping(Bool) -> Void) {
-        
+        print("LOGIN")
         askForTokens { (token, tokenSecret) in
             
             guard let token = token, let tokenSecret = tokenSecret else {
